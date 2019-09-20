@@ -11,15 +11,6 @@ import (
 	"alien-invasion/types"
 )
 
-type (
-	// Alien attacking City
-	Alien = types.Alien
-	// City connected to other Cities with Roads
-	City = types.City
-	// World map of Cities
-	World = types.World
-)
-
 // InputCityList is a list of cities as read from the input file lines
 type InputCityList []*City
 

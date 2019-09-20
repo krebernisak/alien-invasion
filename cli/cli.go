@@ -56,32 +56,31 @@ func Execute() {
 		fmt.Printf("Entropy: using current unix time as a random source\n")
 		fmt.Printf("Entropy Seed: %v\n", now)
 	}
-
+	// Read input file
 	fmt.Printf("Reading world map from file: %s\n", worldFile)
 	world, list, err := simulation.ReadWorldMapFile(worldFile)
 	if err != nil {
 		fmt.Printf("Could not read world from map file \"%s\" with error: %s\n", world, err)
 		os.Exit(1)
 	}
-
+	// Build simulator
 	r := rand.New(source)
 	fmt.Printf("Generating %d random Aliens...\n", alienNumber)
 	aliens := simulation.RandAliens(alienNumber, r)
 	sim := simulation.NewSimulation(r, iterations, world, aliens);
-
+	// Start simulation and print any errors
 	if err := sim.Start(); err != nil {
-		println()
 		fmt.Printf(formatImportantMessage("Error while running simulation: %s"), err)
 		os.Exit(1)
 	}
-
-	println()
+	// Success
 	fmt.Printf(formatImportantMessage("Simulation Success"))
 	fmt.Print(list)
 }
 
 func formatImportantMessage(msg string) string {
-	out := fmt.Sprintf("==================\n")
+	out := fmt.Sprintf("\n\n")
+	out += fmt.Sprintf("==================\n")
 	out += fmt.Sprintf("%s\n", msg)
 	out += fmt.Sprintf("==================\n")
 	return out
