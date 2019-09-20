@@ -13,10 +13,12 @@ import (
 )
 
 const (
-	// DefaultIterations is the default used if number of iteration is not othervise specified
+	// DefaultIterations used if number of iteration is not othervise specified
 	DefaultIterations int = 10000
-	// DefaultNumberOfAliens is the default used if number of Aliens is not othervise specified
+	// DefaultNumberOfAliens used if number of Aliens is not othervise specified
 	DefaultNumberOfAliens int = 10
+	// DefaultWorldFile used if World file is not othervise specified
+	DefaultWorldFile = "./test/example.txt"
 )
 
 var (
@@ -30,7 +32,7 @@ func init() {
 	flag.IntVar(&iterations, "iterations", DefaultIterations, "number of iterations")
 	flag.IntVar(&alienNumber, "aliens", DefaultNumberOfAliens, "number of aliens invading")
 	flag.StringVar(&simulationName, "simulation", "", "name hashed and used as entropy seed")
-	flag.StringVar(&worldFile, "world", "", "file used as world map input")
+	flag.StringVar(&worldFile, "world", DefaultWorldFile, "file used as world map input")
 	flag.StringVar(&intel, "intel", "", "file used to identify aliens")
 	flag.Parse()
 }
@@ -56,7 +58,7 @@ func Execute() {
 	}
 
 	fmt.Printf("Reading world map from file: %s\n", worldFile)
-	world, _, err := simulation.ReadWorldMapFile(worldFile)
+	world, list, err := simulation.ReadWorldMapFile(worldFile)
 	if err != nil {
 		fmt.Printf("Could not read world from map file \"%s\" with error: %s\n", world, err)
 		os.Exit(1)
@@ -68,7 +70,19 @@ func Execute() {
 	sim := simulation.NewSimulation(r, iterations, world, aliens);
 
 	if err := sim.Start(); err != nil {
-		fmt.Printf("Error while running simulation: %s\n", err)
+		println()
+		fmt.Printf(formatImportantMessage("Error while running simulation: %s"), err)
 		os.Exit(1)
 	}
+
+	println()
+	fmt.Printf(formatImportantMessage("Simulation Success"))
+	fmt.Print(list)
+}
+
+func formatImportantMessage(msg string) string {
+	out := fmt.Sprintf("==================\n")
+	out += fmt.Sprintf("%s\n", msg)
+	out += fmt.Sprintf("==================\n")
+	return out
 }

@@ -34,6 +34,9 @@ func (in InputCityList) String() string {
 	for _, city := range in {
 		out += fmt.Sprintf("%s", city.Name)
 		for k, c := range city.Roads {
+			if (c.IsDestroyed()) {
+				continue
+			}
 			out += fmt.Sprintf(" %s=%s", k, c.Name)
 		}
 		out += fmt.Sprintln()

@@ -35,10 +35,12 @@ func (c *City) Destroy() {
 
 // String representation for a City
 func (c *City) String() string {
-	out := fmt.Sprintf("City: %s", c.Name)
-	for road, city := range c.Roads {
-		out += fmt.Sprintf("\n %s => %s", road, city.Name)
+	out := fmt.Sprintf("name=%s roads=map[", c.Name)
+	for k, c := range c.Roads {
+		out += fmt.Sprintf("%s:%s ", k, c.Name)
 	}
-	out += "\n"
-	return out
+	if (len(c.Roads) > 0) {
+		return out[:len(out) - 1] + "]"
+	}
+	return out;
 }

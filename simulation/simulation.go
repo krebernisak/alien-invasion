@@ -2,7 +2,6 @@ package simulation
 
 import (
 	"fmt"
-	"errors"
 	"math/rand"
 )
 
@@ -13,7 +12,7 @@ type Aliens []*Alien
 type AlienOccupation map[string]*Alien
 
 // CityDefence maps Aliens by City
-type CityDefence map[string][]*Alien
+type CityDefence map[string]AlienOccupation
 
 // Simulation struct represents a running simulation
 type Simulation struct {
@@ -49,16 +48,68 @@ func (s *Simulation) Start() error {
 		picks := MakeRange(0, len(s.Aliens))
 		Shuffle(picks, s.R)
 		for _, p := range picks {
-			s.MoveAlien(s.Aliens[p])
+			if err  := s.MoveAlien(s.Aliens[p]); err != nil {
+				return err
+			}
 		}
 		s.Iteration++
 	}
 
-	return errors.New("Not implemented (Yet!)")
+	return nil
 }
 
 // MoveAlien moves the Alien position in the simulation
 func (s *Simulation) MoveAlien(alien *Alien) error {
-	fmt.Printf("Moving Alien: %s\n", alien)
-	return errors.New("Not implemented (Yet!)")
+	fmt.Printf("Moving Alien: %s", alien)
+	if alien.IsDead() || alien.IsTrapped() {
+		// no-op
+		return nil
+	}
+
+	from := alien.City
+	to := s.PickConnectedCity(alien)
+	if from == nil && to == nil {
+		// At the beginning
+		to = s.PickAnyCity()
+	}
+	alien.City = to
+	if from != nil {
+		// Move from City
+		delete(s.CityDefence[from.Name], alien.Name)
+	}
+	// Init city defence
+	if (s.CityDefence[to.Name] == nil) {
+		s.CityDefence[to.Name] = make(AlienOccupation)
+	}
+	// Move to City
+	s.CityDefence[to.Name][alien.Name] = alien
+	if len(s.CityDefence[to.Name]) > 1 {
+		for _, a := range s.CityDefence[to.Name] {
+			a.Kill();
+		}
+		to.Destroy()
+	}
+	return nil
+}
+
+// PickConnectedCity picks a random road to undestroyed City
+func (s *Simulation) PickConnectedCity(alien *Alien) *City {
+	if !alien.IsInvading() {
+		return nil
+	}
+	for _, c := range alien.City.Roads {
+		if (!c.IsDestroyed()) {
+			return c
+		}
+	}
+	return nil
+}
+
+// PickAnyCity picks a random road to undestroyed City
+func (s *Simulation) PickAnyCity() *City {
+	// TODO: pick random city deterministically
+	for _, c := range s.World {
+		return c
+	}
+	return nil
 }

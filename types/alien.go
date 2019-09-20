@@ -32,8 +32,16 @@ func (a *Alien) Kill() {
 	a.Flags[FlagDead] = true
 }
 
+// IsInvading checks if Alien is curently invading a City
+func (a *Alien) IsInvading() bool {
+	return a.City != nil
+}
+
 // IsTrapped checks if Alien is trapped in a City with no roads out
 func (a *Alien) IsTrapped() bool {
+	if (!a.IsInvading()) {
+		return false
+	}
 	var roads int
 	for _, c := range a.City.Roads {
 		if (!c.IsDestroyed()) {
@@ -45,5 +53,5 @@ func (a *Alien) IsTrapped() bool {
 
 // String representation for an Alien
 func (a *Alien) String() string {
-	return fmt.Sprintf("Alien: %s city=%s flags=%v\n", a.Name, a.City, a.Flags)
+	return fmt.Sprintf("name=%s city={%s} flags=%v\n", a.Name, a.City, a.Flags)
 }
