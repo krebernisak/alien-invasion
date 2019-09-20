@@ -4,16 +4,22 @@ This is a simulator written in go to simulate an [alien invasion](./CHALLENGE.md
 
 ## Build & Run
 
-To build `invasion` have a [working Golang environment](https://golang.org/doc/install) installed. If you are all set, just run the following:
+To run the `invasion` have a [working Golang environment](https://golang.org/doc/install) installed. If you are all set, just run the following:
 
 ```
-$ go install main.go
+go run main.go --world "./test/example.txt"
 ```
 
-Then you will be able to run `invasion`:
+You can run the specific simulation by providing entropy:
 
 ```
-$ go run alien-invasion/main.go -aliens=4 -world=$GOPATH/src/alien-invasion/test/example.txt
+$ go run alien-invasion/main.go -aliens=4 -entropy 123 -world "./test/example.txt"
+```
+
+Or provide a simulation name (key) from which entropy will be extracted (sha265):
+
+```
+$ go run main.go -aliens=4 --simulation "Battle for Cosmos" --world "./test/example.txt"
 ```
 
 ## Tests
