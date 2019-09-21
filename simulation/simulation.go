@@ -2,6 +2,7 @@ package simulation
 
 import (
 	"fmt"
+	"sort"
 	"math/rand"
 
 	"alien-invasion/types"
@@ -109,10 +110,10 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 	}
 	// Move
 	from := alien.City
-	to := s.PickConnectedCity(alien)
+	to := s.pickConnectedCity(alien)
 	if from == nil && to == nil {
 		// At the beginning
-		to = s.PickAnyCity()
+		to = s.pickAnyCity()
 		if to == nil {
 			// no-op
 			fmt.Printf(NoOpMessage, "World is destroyed.")
@@ -161,8 +162,8 @@ func checkAlien(alien *Alien) *NoOpError {
 	return nil
 }
 
-// PickConnectedCity picks a random road to undestroyed City
-func (s *Simulation) PickConnectedCity(alien *Alien) *City {
+// pickConnectedCity picks a random road to undestroyed City
+func (s *Simulation) pickConnectedCity(alien *Alien) *City {
 	// Nil if still not invading
 	if !alien.IsInvading() {
 		return nil
@@ -181,14 +182,23 @@ func (s *Simulation) PickConnectedCity(alien *Alien) *City {
 	return nil
 }
 
-// PickAnyCity picks any undestroyed City in the World
-func (s *Simulation) PickAnyCity() *City {
-	// Any undestroyed city
-	// TODO: pick random city deterministically
-	for _, c := range s.World {
+// pickAnyCity picks any undestroyed City in the World
+func (s *Simulation) pickAnyCity() *City {
+	// Any undestroyed city, pick deterministically
+	// TODO: optimize not to sort every pick
+	var keys []string
+	for k := range s.World {
+		if c := s.World[k]; !c.IsDestroyed() {
+			keys = append(keys, k)
+		}
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		c := s.World[k]
 		if (!c.IsDestroyed()) {
 			return c
 		}
 	}
+	// All Cities destroyed
 	return nil
 }

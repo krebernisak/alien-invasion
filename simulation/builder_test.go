@@ -7,12 +7,33 @@ import (
 )
 
 func TestWorldReadFromFile(t *testing.T) {
-	w, input, err := ReadWorldMapFile("../test/example.txt")
+	testWorldReadFromFile(t, "../test/example.txt", 5)
+}
+
+func TestWorldReadFromFile_2(t *testing.T) {
+	testWorldReadFromFile(t, "../test/example_2.txt", 6)
+}
+
+func testWorldReadFromFile(t *testing.T, file string, num int) {
+	w, input, err := ReadWorldMapFile(file)
 	if err != nil {
 		t.Errorf("%v: could not read file", err)
+		return
 	}
 	fmt.Printf("Input:\n%s\n\n", input)
 	fmt.Printf("World:\n%s\n\n", w)
+	if len(w) != num {
+		t.Errorf("len(World) = %d; want %d", len(w), num)
+		return
+	}
+}
+
+func TestRandAliens(t *testing.T) {
+	testRandAliens(t, 10, 0xffffffff);
+}
+
+func TestRandAliensDouble(t *testing.T) {
+	testRandAliens(t, 20, 0xffffffff);
 }
 
 func testRandAliens(t *testing.T, n int, seed int64) {
@@ -23,13 +44,5 @@ func testRandAliens(t *testing.T, n int, seed int64) {
 		t.Errorf("len(RandAliens(%d, 0xffffffff)) = %d; want %d", n, len(aliens), n)
 		return
 	}
-	fmt.Printf("Aliens:\n%s", aliens)
-}
-
-func TestRandAliens(t *testing.T) {
-	testRandAliens(t, 10, 0xffffffff);
-}
-
-func TestRandAliensDouble(t *testing.T) {
-	testRandAliens(t, 20, 0xffffffff);
+	fmt.Printf("Aliens:\n%s\n", aliens)
 }

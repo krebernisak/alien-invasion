@@ -59,22 +59,23 @@ func RandAliens(n int, r *rand.Rand) []*Alien {
 
 // ReadWorldMapFile takes in a file and constructs a World map
 func ReadWorldMapFile(file string) (World, InputCityList, error) {
-	w := make(World)
+	// Open and close file
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer f.Close()
-
+	// Init scanner to scan lines
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
-
+	// Prepare data structures
+	w := make(World)
 	input := make(InputCityList, 0)
 	for scanner.Scan() {
 		sections := strings.Split(scanner.Text(), " ")
-		// create and add city to the world map
+		// Add new City to the world map
 		city := w.AddNewCity(sections[0])
-		// create and link connections
+		// Connect nearby Cities
 		connections := sections[1:]
 		for _, c := range connections {
 			link := strings.Split(c, "=")
