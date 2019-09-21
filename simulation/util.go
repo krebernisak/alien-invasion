@@ -23,6 +23,13 @@ func Shuffle(vals []int, r *rand.Rand) {
 	}
 }
 
+// ShuffleLen creates a shuffled int array of length
+func ShuffleLen(length int, r *rand.Rand) []int {
+	vals := MakeRange(0, length)
+	Shuffle(vals, r)
+	return vals
+}
+
 // Sum sequence of integers
 func Sum(input ...int) int {
 	sum := 0

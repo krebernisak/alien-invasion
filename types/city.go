@@ -13,14 +13,25 @@ const (
 type City struct {
 	Name string
 	Flags map[string]bool
-	Roads map[string]*City
+	Roads []*Road
+	RoadsMap map[string]*City
 }
 
 // NewCity creates a City with a name and default flags
 func NewCity(name string) City {
-	flags := map[string]bool{FlagDestroyed: false}
-	roads := make(map[string]*City)
-	return City{Name: name, Flags: flags, Roads: roads}
+	return City{
+		Name: name,
+		Flags: map[string]bool{FlagDestroyed: false},
+		Roads: make([]*Road, 0),
+		RoadsMap: make(map[string]*City),
+	}
+}
+
+// AddRoad to linked City
+func (c *City) AddRoad(road *Road, link *City) {
+	// TODO: merge roads if road with same key exists
+	c.Roads = append(c.Roads, road)
+	c.RoadsMap[road.Key] = link
 }
 
 // IsDestroyed checks if City is destroyed
@@ -36,10 +47,10 @@ func (c *City) Destroy() {
 // String representation for a City
 func (c *City) String() string {
 	out := fmt.Sprintf("name=%s roads=map[", c.Name)
-	for k, c := range c.Roads {
+	for k, c := range c.RoadsMap {
 		out += fmt.Sprintf("%s:%s ", k, c.Name)
 	}
-	if (len(c.Roads) > 0) {
+	if (len(c.RoadsMap) > 0) {
 		return out[:len(out) - 1] + "]"
 	}
 	return out;

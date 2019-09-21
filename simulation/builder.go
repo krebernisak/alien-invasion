@@ -23,12 +23,22 @@ const (
 func (in InputCityList) String() string {
 	var out string
 	for _, city := range in {
+		if city.IsDestroyed() {
+			continue
+		}
 		out += fmt.Sprintf("%s", city.Name)
-		for k, c := range city.Roads {
+		for _, r := range city.Roads {
+			c := city.RoadsMap[r.Key]
 			if (c.IsDestroyed()) {
 				continue
 			}
-			out += fmt.Sprintf(" %s=%s", k, c.Name)
+			// TODO: Avoid double Roads ?roadName != ""
+			if roadName := r.Names[c.Name]; true {
+				if roadName == "" {
+					roadName = "?"
+				}
+				out += fmt.Sprintf(" %s=%s", roadName, c.Name)
+			}
 		}
 		out += fmt.Sprintln()
 	}
@@ -73,10 +83,12 @@ func ReadWorldMapFile(file string) (World, InputCityList, error) {
 			if !exists {
 				linkedCity = w.AddNewCity(cityName)
 			}
-			city.Roads[roadName] = linkedCity
-			if _, ok := linkedCity.Roads[roadName]; !ok {
-				linkedCity.Roads[roadName] = city
-			}
+			// Discovered a Road
+			road := types.NewRoad(city.Name, cityName)
+			road.PutName(cityName, roadName)
+			// Link Cities
+			city.AddRoad(&road, linkedCity);
+			linkedCity.AddRoad(&road, city);
 		}
 		input = append(input, city)
 		fmt.Printf("Reading... %s\n", city)

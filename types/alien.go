@@ -43,7 +43,7 @@ func (a *Alien) IsTrapped() bool {
 		return false
 	}
 	var roads int
-	for _, c := range a.City.Roads {
+	for _, c := range a.City.RoadsMap {
 		if (!c.IsDestroyed()) {
 			roads++
 		}
@@ -53,5 +53,5 @@ func (a *Alien) IsTrapped() bool {
 
 // String representation for an Alien
 func (a *Alien) String() string {
-	return fmt.Sprintf("name=%s city={%s} flags=%v\n", a.Name, a.City, a.Flags)
+	return fmt.Sprintf("name=%s city={%s}\n", a.Name, a.City)
 }

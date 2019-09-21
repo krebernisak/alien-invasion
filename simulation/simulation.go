@@ -10,7 +10,7 @@ import (
 type (
 	// Alien attacking City
 	Alien = types.Alien
-	// City connected to other Cities with Roads
+	// City connected to other Cities with RoadsMap
 	City = types.City
 	// World map of Cities
 	World = types.World
@@ -22,19 +22,19 @@ type Aliens []*Alien
 // AlienOccupation maps all Aliens by name
 type AlienOccupation map[string]*Alien
 
-// CityDefence maps Aliens by City
-type CityDefence map[string]AlienOccupation
+// CityDefense maps Aliens by City
+type CityDefense map[string]AlienOccupation
 
 // Simulation struct represents a running simulation
 type Simulation struct {
+	// Simulation config
 	R *rand.Rand
 	Iteration int
 	EndIteration int
-
+	// World state
 	World
 	Aliens
-	AlienOccupation
-	CityDefence
+	CityDefense
 }
 
 // NoOpError when next move can not be made
@@ -45,8 +45,10 @@ type NoOpError struct {
 const (
 	// NoOpAlienDisabled when Alien Dead or Trapped
 	NoOpAlienDisabled int = 1
-	// NoOpWorldDestroyed when 
+	// NoOpWorldDestroyed when World destroyed
 	NoOpWorldDestroyed int = 2
+	// NoOpMessage when no-op
+	NoOpMessage = " => To: NO move! %s\n"
 )
 
 // Error string representation
@@ -62,21 +64,19 @@ func NewSimulation(r *rand.Rand, endIteration int, world World, aliens Aliens) S
 		EndIteration: endIteration,
 		World: world,
 		Aliens: aliens,
-		AlienOccupation: make(AlienOccupation),
-		CityDefence: make(CityDefence),
+		CityDefense: make(CityDefense),
 	}
 }
 
 // Start the simulation
 func (s *Simulation) Start() error {
 	fmt.Printf("Running simulation for %d iterations\n", s.EndIteration)
-	for s.Iteration < s.EndIteration {
+	for ; s.Iteration < s.EndIteration; s.Iteration++ {
 		fmt.Printf("\n\n")
 		fmt.Printf("Iteration: %d\n", s.Iteration)
 		fmt.Print("----------\n")
 		// Shuffle cards every iteration
-		picks := MakeRange(0, len(s.Aliens))
-		Shuffle(picks, s.R)
+		picks := ShuffleLen(len(s.Aliens), s.R)
 		// Aliens make their moves
 		noOpMoves := 0
 		for _, p := range picks {
@@ -95,8 +95,6 @@ func (s *Simulation) Start() error {
 			fmt.Printf("Simulation ended early on iteration %d: No Available Moves", s.Iteration)
 			return nil
 		}
-		// Next round
-		s.Iteration++
 	}
 	// Game Over
 	return nil
@@ -105,10 +103,9 @@ func (s *Simulation) Start() error {
 // MoveAlien moves the Alien position in the simulation
 func (s *Simulation) MoveAlien(alien *Alien) error {
 	fmt.Printf("Moving Alien: %s", alien)
-	if alien.IsDead() || alien.IsTrapped() {
-		// no-op
-		fmt.Print(" => To: NO move! Alien Dead or Trapped.\n")
-		return &NoOpError{NoOpAlienDisabled}
+	// Check if dead or trapped
+	if err := checkAlien(alien); err != nil {
+		return err
 	}
 	// Move
 	from := alien.City
@@ -118,7 +115,7 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 		to = s.PickAnyCity()
 		if to == nil {
 			// no-op
-			fmt.Print(" => To: NO move! World is destroyed.\n")
+			fmt.Printf(NoOpMessage, "World is destroyed.")
 			return &NoOpError{reason: NoOpWorldDestroyed}
 		}
 	}
@@ -126,19 +123,19 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 	alien.City = to
 	if from != nil {
 		// Move from City
-		delete(s.CityDefence[from.Name], alien.Name)
+		delete(s.CityDefense[from.Name], alien.Name)
 	}
-	// Init city defence
-	if (s.CityDefence[to.Name] == nil) {
-		s.CityDefence[to.Name] = make(AlienOccupation)
+	// Init city defense
+	if (s.CityDefense[to.Name] == nil) {
+		s.CityDefense[to.Name] = make(AlienOccupation)
 	}
 	// Move to City
-	s.CityDefence[to.Name][alien.Name] = alien
-	if len(s.CityDefence[to.Name]) > 1 {
+	s.CityDefense[to.Name][alien.Name] = alien
+	if len(s.CityDefense[to.Name]) > 1 {
 		to.Destroy()
 		// Kill Aliens and notify
 		out := fmt.Sprintf(" || %s has been destroyed by ", to.Name)
-		for _, a := range s.CityDefence[to.Name] {
+		for _, a := range s.CityDefense[to.Name] {
 			out += fmt.Sprintf("alien %s and ", a.Name)
 			a.Kill();
 		}
@@ -149,23 +146,42 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 	return nil
 }
 
+// checkAlien returns NoOpError if Alien dead or trapped
+func checkAlien(alien *Alien) *NoOpError {
+	if alien.IsDead() {
+		// no-op
+		fmt.Printf(NoOpMessage, "Alien Dead.")
+		return &NoOpError{NoOpAlienDisabled}
+	}
+	if alien.IsTrapped() {
+		// no-op
+		fmt.Printf(NoOpMessage, "Alien Trapped.")
+		return &NoOpError{NoOpAlienDisabled}
+	}
+	return nil
+}
+
 // PickConnectedCity picks a random road to undestroyed City
 func (s *Simulation) PickConnectedCity(alien *Alien) *City {
 	// Nil if still not invading
 	if !alien.IsInvading() {
 		return nil
 	}
+	// Shuffle roads every pick
+	picks := ShuffleLen(len(alien.City.Roads), s.R)
 	// Any undestroyed connected city
-	// TODO: pick connected city deterministically
-	for _, c := range alien.City.Roads {
+	for _, p := range picks {
+		roadKey := alien.City.Roads[p].Key
+		c := alien.City.RoadsMap[roadKey]
 		if (!c.IsDestroyed()) {
 			return c
 		}
 	}
+	// No connected undestroyed City
 	return nil
 }
 
-// PickAnyCity picks a random road to undestroyed City
+// PickAnyCity picks any undestroyed City in the World
 func (s *Simulation) PickAnyCity() *City {
 	// Any undestroyed city
 	// TODO: pick random city deterministically
