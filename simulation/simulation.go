@@ -2,8 +2,8 @@ package simulation
 
 import (
 	"fmt"
-	"sort"
 	"math/rand"
+	"sort"
 
 	"alien-invasion/types"
 )
@@ -29,8 +29,8 @@ type CityDefense map[string]AlienOccupation
 // Simulation struct represents a running simulation
 type Simulation struct {
 	// Simulation config
-	R *rand.Rand
-	Iteration int
+	R            *rand.Rand
+	Iteration    int
 	EndIteration int
 	// World state
 	World
@@ -60,12 +60,12 @@ func (err *NoOpError) Error() string {
 // NewSimulation inits a new Simulation instance
 func NewSimulation(r *rand.Rand, endIteration int, world World, aliens Aliens) Simulation {
 	return Simulation{
-		R: r,
-		Iteration: 0,
+		R:            r,
+		Iteration:    0,
 		EndIteration: endIteration,
-		World: world,
-		Aliens: aliens,
-		CityDefense: make(CityDefense),
+		World:        world,
+		Aliens:       aliens,
+		CityDefense:  make(CityDefense),
 	}
 }
 
@@ -85,7 +85,7 @@ func (s *Simulation) Start() error {
 				// Count no-op
 				if _, ok := err.(*NoOpError); ok {
 					noOpMoves++
-					continue;
+					continue
 				}
 				return err
 			}
@@ -127,7 +127,7 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 		delete(s.CityDefense[from.Name], alien.Name)
 	}
 	// Init city defense
-	if (s.CityDefense[to.Name] == nil) {
+	if s.CityDefense[to.Name] == nil {
 		s.CityDefense[to.Name] = make(AlienOccupation)
 	}
 	// Move to City
@@ -138,9 +138,9 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 		out := fmt.Sprintf(" || %s has been destroyed by ", to.Name)
 		for _, a := range s.CityDefense[to.Name] {
 			out += fmt.Sprintf("alien %s and ", a.Name)
-			a.Kill();
+			a.Kill()
 		}
-		out = out[:len(out) - 5] + "!\n"
+		out = out[:len(out)-5] + "!\n"
 		fmt.Print(out)
 	}
 	// Done
@@ -174,7 +174,7 @@ func (s *Simulation) pickConnectedCity(alien *Alien) *City {
 	for _, p := range picks {
 		roadKey := alien.City.Roads[p].Key
 		c := alien.City.RoadsMap[roadKey]
-		if (!c.IsDestroyed()) {
+		if !c.IsDestroyed() {
 			return c
 		}
 	}
@@ -195,7 +195,7 @@ func (s *Simulation) pickAnyCity() *City {
 	sort.Strings(keys)
 	for _, k := range keys {
 		c := s.World[k]
-		if (!c.IsDestroyed()) {
+		if !c.IsDestroyed() {
 			return c
 		}
 	}

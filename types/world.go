@@ -15,9 +15,7 @@ func (w World) AddCity(city City) *City {
 
 // AddNewCity to a World with name
 func (w World) AddNewCity(name string) *City {
-	city := NewCity(name)
-	w[city.Name] = &city
-	return &city
+	return w.AddCity(NewCity(name))
 }
 
 // String representation of a World

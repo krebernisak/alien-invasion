@@ -3,10 +3,10 @@ package simulation
 import (
 	"bufio"
 	"fmt"
-	"os"
-	"strings"
-	"strconv"
 	"math/rand"
+	"os"
+	"strconv"
+	"strings"
 
 	"alien-invasion/types"
 )
@@ -29,7 +29,7 @@ func (in InputCityList) String() string {
 		out += fmt.Sprintf("%s", city.Name)
 		for _, r := range city.Roads {
 			c := city.RoadsMap[r.Key]
-			if (c.IsDestroyed()) {
+			if c.IsDestroyed() {
 				continue
 			}
 			// TODO: Avoid double Roads ?roadName != ""
@@ -80,7 +80,7 @@ func ReadWorldMapFile(file string) (World, InputCityList, error) {
 		for _, c := range connections {
 			link := strings.Split(c, "=")
 			roadName, cityName := link[0], link[1]
-			linkedCity, exists := w[cityName];
+			linkedCity, exists := w[cityName]
 			if !exists {
 				linkedCity = w.AddNewCity(cityName)
 			}
@@ -88,8 +88,8 @@ func ReadWorldMapFile(file string) (World, InputCityList, error) {
 			road := types.NewRoad(city.Name, cityName)
 			road.PutName(cityName, roadName)
 			// Link Cities
-			city.AddRoad(&road, linkedCity);
-			linkedCity.AddRoad(&road, city);
+			city.AddRoad(&road, linkedCity)
+			linkedCity.AddRoad(&road, city)
 		}
 		input = append(input, city)
 		fmt.Printf("Reading... %s\n", city)

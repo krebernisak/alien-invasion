@@ -11,18 +11,18 @@ const (
 
 // City has a name and is connected to other Cities via roads
 type City struct {
-	Name string
-	Flags map[string]bool
-	Roads []*Road
+	Name     string
+	Flags    map[string]bool
+	Roads    []*Road
 	RoadsMap map[string]*City
 }
 
 // NewCity creates a City with a name and default flags
 func NewCity(name string) City {
 	return City{
-		Name: name,
-		Flags: map[string]bool{FlagDestroyed: false},
-		Roads: make([]*Road, 0),
+		Name:     name,
+		Flags:    map[string]bool{FlagDestroyed: false},
+		Roads:    make([]*Road, 0),
 		RoadsMap: make(map[string]*City),
 	}
 }
@@ -36,7 +36,7 @@ func (c *City) AddRoad(road *Road, link *City) {
 
 // IsDestroyed checks if City is destroyed
 func (c *City) IsDestroyed() bool {
-	return c.Flags[FlagDestroyed];
+	return c.Flags[FlagDestroyed]
 }
 
 // Destroy City makes City burn in flames
@@ -50,8 +50,8 @@ func (c *City) String() string {
 	for k, c := range c.RoadsMap {
 		out += fmt.Sprintf("%s:%s ", k, c.Name)
 	}
-	if (len(c.RoadsMap) > 0) {
-		return out[:len(out) - 1] + "]"
+	if len(c.RoadsMap) > 0 {
+		return out[:len(out)-1] + "]"
 	}
-	return out;
+	return out
 }

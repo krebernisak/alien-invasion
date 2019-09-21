@@ -2,8 +2,8 @@ package simulation
 
 import (
 	"fmt"
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 func TestWorldReadFromFile(t *testing.T) {
@@ -29,18 +29,18 @@ func testWorldReadFromFile(t *testing.T, file string, num int) {
 }
 
 func TestRandAliens(t *testing.T) {
-	testRandAliens(t, 10, 0xffffffff);
+	testRandAliens(t, 10, 0xffffffff)
 }
 
 func TestRandAliensDouble(t *testing.T) {
-	testRandAliens(t, 20, 0xffffffff);
+	testRandAliens(t, 20, 0xffffffff)
 }
 
 func testRandAliens(t *testing.T, n int, seed int64) {
 	source := rand.NewSource(seed)
 	r := rand.New(source)
 	aliens := RandAliens(n, r)
-	if (len(aliens) != n) {
+	if len(aliens) != n {
 		t.Errorf("len(RandAliens(%d, 0xffffffff)) = %d; want %d", n, len(aliens), n)
 		return
 	}

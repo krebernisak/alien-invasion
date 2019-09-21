@@ -1,8 +1,8 @@
 package simulation
 
 import (
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 func TestMakeRange(t *testing.T) {

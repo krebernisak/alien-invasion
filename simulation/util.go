@@ -6,7 +6,7 @@ import (
 
 // MakeRange generates a sequence of int numbers
 func MakeRange(min, max int) []int {
-	res := make([]int, max - min)
+	res := make([]int, max-min)
 	for i := range res {
 		res[i] = min + i
 	}

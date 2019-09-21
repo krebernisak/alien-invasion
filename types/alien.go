@@ -11,9 +11,9 @@ const (
 
 // Alien can be dead or alive and occupating a City
 type Alien struct {
-	Name string
+	Name  string
 	Flags map[string]bool
-	City *City
+	City  *City
 }
 
 // NewAlien creates an Alien with a name and default flags
@@ -24,7 +24,7 @@ func NewAlien(name string) Alien {
 
 // IsDead checks if Alien died
 func (a *Alien) IsDead() bool {
-	return a.Flags[FlagDead];
+	return a.Flags[FlagDead]
 }
 
 // Kill Alien makes it dead
@@ -39,16 +39,16 @@ func (a *Alien) IsInvading() bool {
 
 // IsTrapped checks if Alien is trapped in a City with no roads out
 func (a *Alien) IsTrapped() bool {
-	if (!a.IsInvading()) {
+	if !a.IsInvading() {
 		return false
 	}
 	var roads int
 	for _, c := range a.City.RoadsMap {
-		if (!c.IsDestroyed()) {
+		if !c.IsDestroyed() {
 			roads++
 		}
 	}
-	return roads <= 0;
+	return roads <= 0
 }
 
 // String representation for an Alien

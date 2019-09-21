@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"fmt"
-	"os"
-	"flag"
-	"math/rand"
 	"crypto/sha256"
 	"encoding/binary"
+	"flag"
+	"fmt"
+	"math/rand"
+	"os"
 	"time"
 
 	"alien-invasion/simulation"
@@ -22,8 +22,8 @@ const (
 )
 
 var (
-	entropy int64
-	iterations, alienNumber int
+	entropy                          int64
+	iterations, alienNumber          int
 	simulationName, worldFile, intel string
 )
 
@@ -51,7 +51,7 @@ func Execute() {
 		fmt.Printf("Entropy: using first 8 bytes of sha256(\"%v\")\n", simulationName)
 		fmt.Printf("Entropy Seed: %v\n", seed)
 	} else {
-		now := time.Now().UnixNano();
+		now := time.Now().UnixNano()
 		source = rand.NewSource(now)
 		fmt.Printf("Entropy: using current unix time as a random source\n")
 		fmt.Printf("Entropy Seed: %v\n", now)
@@ -67,7 +67,7 @@ func Execute() {
 	r := rand.New(source)
 	fmt.Printf("Generating %d random Aliens...\n", alienNumber)
 	aliens := simulation.RandAliens(alienNumber, r)
-	sim := simulation.NewSimulation(r, iterations, world, aliens);
+	sim := simulation.NewSimulation(r, iterations, world, aliens)
 	// Start simulation and print any errors
 	if err := sim.Start(); err != nil {
 		fmt.Printf(formatImportantMessage("Error while running simulation: %s"), err)
