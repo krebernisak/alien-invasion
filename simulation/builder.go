@@ -8,8 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"alien-invasion/types"
+	"alien-invasion/simulation/types"
 )
+
+// TODO: rename as WorldMapFile?
 
 // InputCityList is a list of cities as read from the input file lines
 type InputCityList []*City
@@ -27,13 +29,14 @@ func (in InputCityList) String() string {
 			continue
 		}
 		out += fmt.Sprintf("%s", city.Name)
-		for _, r := range city.Roads {
-			c := city.RoadsMap[r.Key]
+		for _, r := range city.Links {
+			n := city.Nodes[r.Key]
+			c := City{Node: *n}
 			if c.IsDestroyed() {
 				continue
 			}
 			// TODO: Avoid double Roads ?roadName != ""
-			if roadName := r.Names[c.Name]; true {
+			if roadName := city.RoadNames[r.Key]; true {
 				if roadName == "" {
 					roadName = "?"
 				}
@@ -49,8 +52,8 @@ func (in InputCityList) String() string {
 func RandAliens(n int, r *rand.Rand) []*Alien {
 	out := make([]*Alien, 0)
 	for n > 0 {
-		name := strconv.Itoa(r.Int())
-		alien := types.NewAlien(name[:RandAlienNameLen])
+		name := strconv.Itoa(r.Int())[:RandAlienNameLen]
+		alien := types.NewAlien(name)
 		out = append(out, &alien)
 		n--
 	}
@@ -80,16 +83,14 @@ func ReadWorldMapFile(file string) (World, InputCityList, error) {
 		for _, c := range connections {
 			link := strings.Split(c, "=")
 			roadName, cityName := link[0], link[1]
-			linkedCity, exists := w[cityName]
+			other, exists := w[cityName]
 			if !exists {
-				linkedCity = w.AddNewCity(cityName)
+				other = w.AddNewCity(cityName)
 			}
-			// Discovered a Road
-			road := types.NewRoad(city.Name, cityName)
-			road.PutName(cityName, roadName)
-			// Link Cities
-			city.AddRoad(&road, linkedCity)
-			linkedCity.AddRoad(&road, city)
+			// Discovered a Road => Link Cities
+			road := city.Connect(&other.Node)
+			city.RoadNames[road.Key] = roadName
+			other.ConnectVia(road, &city.Node)
 		}
 		input = append(input, city)
 		fmt.Printf("Reading... %s\n", city)
