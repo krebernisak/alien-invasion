@@ -6,11 +6,11 @@ import (
 
 // MakeRange generates a sequence of int numbers
 func MakeRange(min, max int) []int {
-	res := make([]int, max-min)
-	for i := range res {
-		res[i] = min + i
+	vals := make([]int, max-min)
+	for i := range vals {
+		vals[i] = min + i
 	}
-	return res
+	return vals
 }
 
 // Shuffle input int array using a random number generator

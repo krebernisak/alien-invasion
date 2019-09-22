@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+
+	"alien-invasion/types"
 )
 
 const (
@@ -11,15 +13,25 @@ const (
 
 // Alien can be dead or alive and occupating a City
 type Alien struct {
-	Name  string
-	Flags map[string]bool
-	City  *City
+	types.Agent
+	city *City
 }
 
 // NewAlien creates an Alien with a name and default flags
 func NewAlien(name string) Alien {
-	flags := map[string]bool{FlagDead: false}
-	return Alien{Name: name, Flags: flags}
+	// Flags FlagDead default is false
+	return Alien{types.NewAgent(name), nil}
+}
+
+// InvadeCity change City this Alien is occupying
+func (a *Alien) InvadeCity(city *City) {
+	a.Node = &city.Node
+	a.city = city
+}
+
+// City returns City this Alien is occupying
+func (a *Alien) City() *City {
+	return a.city
 }
 
 // IsDead checks if Alien died
@@ -34,7 +46,7 @@ func (a *Alien) Kill() {
 
 // IsInvading checks if Alien is curently invading a City
 func (a *Alien) IsInvading() bool {
-	return a.City != nil
+	return a.Node != nil
 }
 
 // IsTrapped checks if Alien is trapped in a City with no roads out
@@ -42,16 +54,16 @@ func (a *Alien) IsTrapped() bool {
 	if !a.IsInvading() {
 		return false
 	}
-	var roads int
-	for _, c := range a.City.RoadsMap {
+	for _, n := range a.City().Nodes {
+		c := City{Node: *n}
 		if !c.IsDestroyed() {
-			roads++
+			return false
 		}
 	}
-	return roads <= 0
+	return true
 }
 
 // String representation for an Alien
 func (a *Alien) String() string {
-	return fmt.Sprintf("name=%s city={%s}\n", a.Name, a.City)
+	return fmt.Sprintf("name=%s city={%s}\n", a.Name, a.Node)
 }

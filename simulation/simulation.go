@@ -5,13 +5,14 @@ import (
 	"math/rand"
 	"sort"
 
-	"alien-invasion/types"
+	"alien-invasion/simulation/types"
+	util "alien-invasion/util"
 )
 
 type (
 	// Alien attacking City
 	Alien = types.Alien
-	// City connected to other Cities with RoadsMap
+	// City connected to other Cities with Nodes
 	City = types.City
 	// World map of Cities
 	World = types.World
@@ -44,12 +45,14 @@ type NoOpError struct {
 }
 
 const (
-	// NoOpAlienDisabled when Alien Dead or Trapped
-	NoOpAlienDisabled int = 1
+	// NoOpAlienDead when Alien is Dead
+	NoOpAlienDead int = 1
+	// NoOpAlienTrapped when Alien is Trapped
+	NoOpAlienTrapped int = 2
 	// NoOpWorldDestroyed when World destroyed
-	NoOpWorldDestroyed int = 2
+	NoOpWorldDestroyed int = 3
 	// NoOpMessage when no-op
-	NoOpMessage = " => To: NO move! %s\n"
+	NoOpMessage = " || To: NO move! %s\n"
 )
 
 // Error string representation
@@ -77,21 +80,22 @@ func (s *Simulation) Start() error {
 		fmt.Printf("Iteration: %d\n", s.Iteration)
 		fmt.Print("----------\n")
 		// Shuffle cards every iteration
-		picks := ShuffleLen(len(s.Aliens), s.R)
+		picks := util.ShuffleLen(len(s.Aliens), s.R)
 		// Aliens make their moves
-		noOpMoves := 0
+		noOpRound := true
 		for _, p := range picks {
 			if err := s.MoveAlien(s.Aliens[p]); err != nil {
-				// Count no-op
 				if _, ok := err.(*NoOpError); ok {
-					noOpMoves++
+					// Alien made no move
 					continue
 				}
 				return err
 			}
+			// If just one move is made, we continue the simulation
+			noOpRound = false
 		}
 		// Check if last iteration was empty (no moves)
-		if noOpMoves == len(s.Aliens) {
+		if noOpRound {
 			fmt.Printf("\n")
 			fmt.Printf("Simulation ended early on iteration %d: No Available Moves", s.Iteration)
 			return nil
@@ -103,25 +107,24 @@ func (s *Simulation) Start() error {
 
 // MoveAlien moves the Alien position in the simulation
 func (s *Simulation) MoveAlien(alien *Alien) error {
+	from, to, err := s.pickMove(alien)
 	fmt.Printf("Moving Alien: %s", alien)
-	// Check if dead or trapped
-	if err := checkAlien(alien); err != nil {
+	fmt.Printf(" => To: %s\n", to)
+	if err != nil {
+		// no-op error
+		if noop, ok := err.(*NoOpError); ok {
+			switch noop.reason {
+			case NoOpWorldDestroyed:
+				fmt.Printf(NoOpMessage, "World is destroyed.")
+			case NoOpAlienDead:
+				fmt.Printf(NoOpMessage, "Alien Dead.")
+			case NoOpAlienTrapped:
+				fmt.Printf(NoOpMessage, "Alien Trapped.")
+			}
+		}
 		return err
 	}
-	// Move
-	from := alien.City
-	to := s.pickConnectedCity(alien)
-	if from == nil && to == nil {
-		// At the beginning
-		to = s.pickAnyCity()
-		if to == nil {
-			// no-op
-			fmt.Printf(NoOpMessage, "World is destroyed.")
-			return &NoOpError{reason: NoOpWorldDestroyed}
-		}
-	}
-	fmt.Printf(" => To: %s\n", to)
-	alien.City = to
+	alien.InvadeCity(to)
 	if from != nil {
 		// Move from City
 		delete(s.CityDefense[from.Name], alien.Name)
@@ -147,17 +150,33 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 	return nil
 }
 
+// pickMove returns Alien move from City to City
+func (s *Simulation) pickMove(alien *Alien) (*City, *City, error) {
+	// Check if dead or trapped
+	from := alien.City()
+	if err := checkAlien(alien); err != nil {
+		return from, nil, err
+	}
+	// At the beginning
+	if from == nil {
+		to := s.pickAnyCity()
+		if to == nil {
+			return from, to, &NoOpError{reason: NoOpWorldDestroyed}
+		}
+		return from, to, nil
+	}
+	// Move to next City
+	to := s.pickConnectedCity(alien)
+	return from, to, nil
+}
+
 // checkAlien returns NoOpError if Alien dead or trapped
 func checkAlien(alien *Alien) *NoOpError {
 	if alien.IsDead() {
-		// no-op
-		fmt.Printf(NoOpMessage, "Alien Dead.")
-		return &NoOpError{NoOpAlienDisabled}
+		return &NoOpError{NoOpAlienDead}
 	}
 	if alien.IsTrapped() {
-		// no-op
-		fmt.Printf(NoOpMessage, "Alien Trapped.")
-		return &NoOpError{NoOpAlienDisabled}
+		return &NoOpError{NoOpAlienTrapped}
 	}
 	return nil
 }
@@ -169,12 +188,12 @@ func (s *Simulation) pickConnectedCity(alien *Alien) *City {
 		return nil
 	}
 	// Shuffle roads every pick
-	picks := ShuffleLen(len(alien.City.Roads), s.R)
+	picks := util.ShuffleLen(len(alien.City().Links), s.R)
 	// Any undestroyed connected city
 	for _, p := range picks {
-		roadKey := alien.City.Roads[p].Key
-		c := alien.City.RoadsMap[roadKey]
-		if !c.IsDestroyed() {
+		roadKey := alien.City().Links[p].Key
+		n := alien.City().Nodes[roadKey]
+		if c := s.World[n.Name]; !c.IsDestroyed() {
 			return c
 		}
 	}
@@ -185,20 +204,17 @@ func (s *Simulation) pickConnectedCity(alien *Alien) *City {
 // pickAnyCity picks any undestroyed City in the World
 func (s *Simulation) pickAnyCity() *City {
 	// Any undestroyed city, pick deterministically
-	// TODO: optimize not to sort every pick
 	var keys []string
 	for k := range s.World {
 		if c := s.World[k]; !c.IsDestroyed() {
 			keys = append(keys, k)
 		}
 	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		c := s.World[k]
-		if !c.IsDestroyed() {
-			return c
-		}
+	// If all Cities destroyed
+	if len(keys) == 0 {
+		return nil
 	}
-	// All Cities destroyed
-	return nil
+	// Sort keys for a deterministic pick
+	sort.Strings(keys)
+	return s.World[keys[s.R.Intn(len(keys))]]
 }

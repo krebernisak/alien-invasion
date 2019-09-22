@@ -49,6 +49,12 @@ $ go run main.go -aliens 4 -iterations 100 -world "./test/example_2.txt" -entrop
 
 ## Implementation
 
+While [completely random is not really possible](https://www.youtube.com/watch?v=sMb00lz-IfE), we still can have pseudorandom numbers on computers.
+
+The [`math/rand` package](https://golang.org/pkg/math/rand/) provided by the Go Standard Library gives us [pseudo-random number generators (PRNG)](https://en.wikipedia.org/wiki/Pseudorandom_number_generator), also called _deterministic random bit generators_.
+
+As with all pseudo number generators, any number generated through `math/rand` is not really random by default, as being deterministic it will always print the same value each time.
+
 TODO: Explain why build a deterministic simulation
 
 TODO: Explain why we use flags map
