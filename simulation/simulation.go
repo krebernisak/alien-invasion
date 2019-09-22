@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"alien-invasion/simulation/types"
-	util "alien-invasion/util"
+	"alien-invasion/util"
 )
 
 type (
@@ -124,6 +124,7 @@ func (s *Simulation) MoveAlien(alien *Alien) error {
 		}
 		return err
 	}
+	// Move
 	alien.InvadeCity(to)
 	if from != nil {
 		// Move from City
@@ -191,8 +192,8 @@ func (s *Simulation) pickConnectedCity(alien *Alien) *City {
 	picks := util.ShuffleLen(len(alien.City().Links), s.R)
 	// Any undestroyed connected city
 	for _, p := range picks {
-		roadKey := alien.City().Links[p].Key
-		n := alien.City().Nodes[roadKey]
+		key := alien.City().Links[p].Key
+		n := alien.City().Nodes[key]
 		if c := s.World[n.Name]; !c.IsDestroyed() {
 			return c
 		}
@@ -216,5 +217,6 @@ func (s *Simulation) pickAnyCity() *City {
 	}
 	// Sort keys for a deterministic pick
 	sort.Strings(keys)
-	return s.World[keys[s.R.Intn(len(keys))]]
+	pick := s.R.Intn(len(keys))
+	return s.World[keys[pick]]
 }
