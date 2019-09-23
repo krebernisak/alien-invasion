@@ -2,6 +2,7 @@ package simulation
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -42,13 +43,15 @@ func (in WorldMapFile) FilterDestroyed(world types.World) WorldMapFile {
 			processed[city.Name] = true
 			continue
 		}
-		// If destroyed process links
+		// If destroyed process links (separated graph)
 		for _, link := range city.Links {
 			n := city.Nodes[link.Key]
 			other := world[n.Name]
+			// Some links are already processed or destroyed
 			if processed[other.Name] || other.IsDestroyed() {
 				continue
 			}
+			// Other links we process
 			out = append(out, other)
 			processed[other.Name] = true
 		}
@@ -73,11 +76,10 @@ func (in WorldMapFile) String() string {
 // RandAliens creates N new Aliens with random names
 func RandAliens(n int, r *rand.Rand) []*Alien {
 	out := make([]*Alien, 0)
-	for n > 0 {
+	for ; n > 0; n-- {
 		name := strconv.Itoa(r.Int())[:RandAlienNameLen]
 		alien := types.NewAlien(name)
 		out = append(out, &alien)
-		n--
 	}
 	return out
 }
@@ -93,7 +95,7 @@ func IdentifyAliens(aliens []*Alien, file string) error {
 	// Init scanner to scan lines
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
-	// Give names to aliens until names available
+	// Give names to aliens until names available (simple)
 	for i := 0; i < len(aliens) && scanner.Scan(); i++ {
 		aliens[i].Name = scanner.Text()
 	}
@@ -119,9 +121,12 @@ func ReadWorldMapFile(file string) (World, WorldMapFile, error) {
 		// Add new City to the world map
 		city := w.AddNewCity(sections[0])
 		// Connect nearby Cities
-		for _, c := range sections[1:] {
-			linkStr := strings.Split(c, "=")
-			roadName, cityName := linkStr[0], linkStr[1]
+		for _, s := range sections[1:] {
+			roadName, cityName, err := extractLink(s)
+			if err != nil {
+				return nil, nil, err
+			}
+			// Add new linked City if unknown
 			other, exists := w[cityName]
 			if !exists {
 				other = w.AddNewCity(cityName)
@@ -137,4 +142,14 @@ func ReadWorldMapFile(file string) (World, WorldMapFile, error) {
 	}
 
 	return w, input, nil
+}
+
+// extractLink extracts a road and city name from input string or returns an error
+func extractLink(input string) (string, string, error) {
+	link := strings.Split(input, "=")
+	if len(link) != 2 {
+		return "", "", errors.New("Wrong link format")
+	}
+	roadName, cityName := link[0], link[1]
+	return roadName, cityName, nil
 }

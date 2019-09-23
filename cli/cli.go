@@ -3,6 +3,7 @@ package cli
 import (
 	"crypto/sha256"
 	"encoding/binary"
+	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -41,8 +42,28 @@ func init() {
 	flag.Parse()
 }
 
+// checkFlags validates input flags
+func checkFlags() error {
+	if alienNumber <= 0 {
+		return errors.New("Aliens number must be > 0")
+	}
+	if iterations <= 0 {
+		return errors.New("Iterations number must be > 0")
+	}
+	if len(worldFile) == 0 {
+		return errors.New("World map file path is empty")
+	}
+	return nil
+}
+
 // Execute command and set flags appropriately.
 func Execute() {
+	// Check input flags for errors
+	if err := checkFlags(); err != nil {
+		fmt.Printf("Error while checking flags: %s\n", err)
+		flag.Usage()
+		os.Exit(1)
+	}
 	// Read input file
 	fmt.Printf("Reading world map from file: %s\n", worldFile)
 	world, in, err := simulation.ReadWorldMapFile(worldFile)

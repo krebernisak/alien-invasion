@@ -4,7 +4,7 @@ This is a _deterministic_ simulator written in Go to simulate an [alien invasion
 
 ## Build & Run
 
-To run the `invasion` have a [working Golang environment](https://golang.org/doc/install) installed. If you are all set, just run the following:
+To run the `alien-invasion` have a [working Golang environment](https://golang.org/doc/install) installed. If you are all set, just run the following:
 
 ```
 $ go run main.go
@@ -32,7 +32,7 @@ Usage of /main:
 You can run the specific simulation by providing entropy:
 
 ```
-$ go run alien-invasion/main.go -aliens 4 -entropy 123
+$ go run main.go -aliens 4 -entropy 123
 ```
 
 Or provide a simulation name (key) from which entropy will be extracted (sha265):
@@ -63,7 +63,7 @@ As with all pseudo number generators, any number generated through `math/rand` i
 
 ### State
 
-We use flags map for Agents and Nodes to avoid deleting and removing information from the state. This can enable us to implement another simulation with slightly different rules. For example, this other implementation could:
+We use flags map for Agents and Nodes to avoid deleting and removing information from the state graph. This can enable us to implement another simulation with slightly different rules. For example, this other implementation could:
 
 - resurrect Aliens at some point
 - allow Aliens to teleport if trapped in a City
