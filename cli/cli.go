@@ -22,23 +22,54 @@ const (
 )
 
 var (
-	entropy                          int64
-	iterations, alienNumber          int
-	simulationName, worldFile, intel string
+	entropy                              int64
+	iterations, alienNumber              int
+	simulationName, worldFile, intelFile string
 )
 
+// init cli flags
 func init() {
 	flag.Int64Var(&entropy, "entropy", 0, "random number used as entropy seed")
 	flag.IntVar(&iterations, "iterations", DefaultIterations, "number of iterations")
 	flag.IntVar(&alienNumber, "aliens", DefaultNumberOfAliens, "number of aliens invading")
 	flag.StringVar(&simulationName, "simulation", "", "name hashed and used as entropy seed")
-	flag.StringVar(&worldFile, "world", DefaultWorldFile, "file used as world map input")
-	flag.StringVar(&intel, "intel", "", "file used to identify aliens")
+	flag.StringVar(&worldFile, "world", DefaultWorldFile, "a file used as world map input")
+	flag.StringVar(&intelFile, "intel", "", "a file used to identify aliens")
 	flag.Parse()
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
+// Execute command and set flags appropriately.
 func Execute() {
+	// Read input file
+	fmt.Printf("Reading world map from file: %s\n", worldFile)
+	world, list, err := simulation.ReadWorldMapFile(worldFile)
+	if err != nil {
+		fmt.Printf("Could not read world from map file \"%s\" with error: %s\n", worldFile, err)
+		os.Exit(1)
+	}
+	// Build a simulator
+	fmt.Printf("Generating %d random Aliens...\n", alienNumber)
+	r := buildRand()
+	aliens := simulation.RandAliens(alienNumber, r)
+	if intelFile != "" {
+		if err := simulation.IdentifyAliens(aliens, intelFile); err != nil {
+			fmt.Printf("Could not read aliens intel from file \"%s\" with error: %s\n", intelFile, err)
+			os.Exit(1)
+		}
+	}
+	sim := simulation.NewSimulation(r, iterations, world, aliens)
+	// Start the simulation and print any errors
+	if err := sim.Start(); err != nil {
+		fmt.Printf(formatImportantMessage("Error while running simulation: %s"), err)
+		os.Exit(1)
+	}
+	// Success
+	fmt.Printf(formatImportantMessage("Simulation Success"))
+	fmt.Print(list)
+}
+
+// buildRand build a pseudorandom numbers generator from input flags
+func buildRand() *rand.Rand {
 	var source rand.Source
 	if entropy != 0 {
 		source = rand.NewSource(entropy)
@@ -56,28 +87,10 @@ func Execute() {
 		fmt.Printf("Entropy: using current unix time as a random source\n")
 		fmt.Printf("Entropy Seed: %v\n", now)
 	}
-	// Read input file
-	fmt.Printf("Reading world map from file: %s\n", worldFile)
-	world, list, err := simulation.ReadWorldMapFile(worldFile)
-	if err != nil {
-		fmt.Printf("Could not read world from map file \"%s\" with error: %s\n", world, err)
-		os.Exit(1)
-	}
-	// Build simulator
-	r := rand.New(source)
-	fmt.Printf("Generating %d random Aliens...\n", alienNumber)
-	aliens := simulation.RandAliens(alienNumber, r)
-	sim := simulation.NewSimulation(r, iterations, world, aliens)
-	// Start simulation and print any errors
-	if err := sim.Start(); err != nil {
-		fmt.Printf(formatImportantMessage("Error while running simulation: %s"), err)
-		os.Exit(1)
-	}
-	// Success
-	fmt.Printf(formatImportantMessage("Simulation Success"))
-	fmt.Print(list)
+	return rand.New(source)
 }
 
+// formatImportantMessage formats an important message ;)
 func formatImportantMessage(msg string) string {
 	out := fmt.Sprintf("\n\n")
 	out += fmt.Sprintf("==================\n")

@@ -58,6 +58,24 @@ func RandAliens(n int, r *rand.Rand) []*Alien {
 	return out
 }
 
+// IdentifyAliens reads Alien intel file and names Aliens
+func IdentifyAliens(aliens []*Alien, file string) error {
+	// Open and close file
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	// Init scanner to scan lines
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
+	// Give names to aliens until names available
+	for i := 0; i < len(aliens) && scanner.Scan(); i++ {
+		aliens[i].Name = scanner.Text()
+	}
+	return nil
+}
+
 // ReadWorldMapFile takes in a file and constructs a World map
 func ReadWorldMapFile(file string) (World, WorldMapFile, error) {
 	// Open and close file
