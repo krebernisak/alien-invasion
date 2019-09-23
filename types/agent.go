@@ -4,14 +4,14 @@ import (
 	"fmt"
 )
 
-// Agent can be dead or alive and occupating a City
+// Agent has a name, some state and points to a Node
 type Agent struct {
 	Name  string
 	Flags map[string]bool
 	Node  *Node
 }
 
-// NewAgent creates an Agent with a name and default flags
+// NewAgent creates an Agent with a name
 func NewAgent(name string) Agent {
 	return Agent{
 		Name:  name,

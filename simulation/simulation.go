@@ -12,7 +12,7 @@ import (
 type (
 	// Alien attacking City
 	Alien = types.Alien
-	// City connected to other Cities with Nodes
+	// City connected to other Cities
 	City = types.City
 	// World map of Cities
 	World = types.World
@@ -49,7 +49,7 @@ const (
 	NoOpAlienDead int = 1
 	// NoOpAlienTrapped when Alien is Trapped
 	NoOpAlienTrapped int = 2
-	// NoOpWorldDestroyed when World destroyed
+	// NoOpWorldDestroyed when World is destroyed
 	NoOpWorldDestroyed int = 3
 	// NoOpMessage when no-op
 	NoOpMessage = " || To: NO move! %s\n"

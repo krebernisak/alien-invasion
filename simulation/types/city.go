@@ -18,7 +18,10 @@ type City struct {
 // NewCity creates a City with a name and default flags
 func NewCity(name string) City {
 	// FlagDestroyed default is false
-	return City{types.NewNode(name), make(map[string]string)}
+	return City{
+		Node:      types.NewNode(name),
+		RoadNames: make(map[string]string),
+	}
 }
 
 // IsDestroyed checks if City is destroyed
