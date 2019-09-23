@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"alien-invasion/simulation"
@@ -19,6 +20,8 @@ const (
 	DefaultNumberOfAliens int = 10
 	// DefaultWorldFile used if World file is not otherwise specified
 	DefaultWorldFile = "./test/example.txt"
+	// DefaultIntelFile used if intel file is not otherwise specified
+	DefaultIntelFile = "./test/aliens.txt"
 )
 
 var (
@@ -34,7 +37,7 @@ func init() {
 	flag.IntVar(&alienNumber, "aliens", DefaultNumberOfAliens, "number of aliens invading")
 	flag.StringVar(&simulationName, "simulation", "", "name hashed and used as entropy seed")
 	flag.StringVar(&worldFile, "world", DefaultWorldFile, "a file used as world map input")
-	flag.StringVar(&intelFile, "intel", "", "a file used to identify aliens")
+	flag.StringVar(&intelFile, "intel", DefaultIntelFile, "a file used to identify aliens")
 	flag.Parse()
 }
 
@@ -42,7 +45,7 @@ func init() {
 func Execute() {
 	// Read input file
 	fmt.Printf("Reading world map from file: %s\n", worldFile)
-	world, list, err := simulation.ReadWorldMapFile(worldFile)
+	world, in, err := simulation.ReadWorldMapFile(worldFile)
 	if err != nil {
 		fmt.Printf("Could not read world from map file \"%s\" with error: %s\n", worldFile, err)
 		os.Exit(1)
@@ -65,36 +68,37 @@ func Execute() {
 	}
 	// Success
 	fmt.Printf(formatImportantMessage("Simulation Success"))
-	fmt.Print(list)
+	fmt.Print(in.FilterDestroyed(world))
 }
 
 // buildRand build a pseudorandom numbers generator from input flags
 func buildRand() *rand.Rand {
+	var seed int64
 	var source rand.Source
 	if entropy != 0 {
+		seed = entropy
 		source = rand.NewSource(entropy)
-		fmt.Printf("Entropy: using --entropy flag\n")
-		fmt.Printf("Entropy Seed: %v\n", entropy)
+		fmt.Printf("Entropy: using provided entropy\n")
 	} else if len(simulationName) > 0 {
 		hash := sha256.Sum256([]byte(simulationName))
-		seed := int64(binary.BigEndian.Uint64(hash[:8]))
+		seed = int64(binary.BigEndian.Uint64(hash[:8]))
 		source = rand.NewSource(seed)
 		fmt.Printf("Entropy: using first 8 bytes of sha256(\"%v\")\n", simulationName)
-		fmt.Printf("Entropy Seed: %v\n", seed)
 	} else {
-		now := time.Now().UnixNano()
-		source = rand.NewSource(now)
+		seed = time.Now().UnixNano()
+		source = rand.NewSource(seed)
 		fmt.Printf("Entropy: using current unix time as a random source\n")
-		fmt.Printf("Entropy Seed: %v\n", now)
 	}
+	fmt.Printf("Entropy Seed: %v\n", seed)
 	return rand.New(source)
 }
 
 // formatImportantMessage formats an important message ;)
 func formatImportantMessage(msg string) string {
+	line := strings.Repeat("=", len(msg))
 	out := fmt.Sprintf("\n\n")
-	out += fmt.Sprintf("==================\n")
+	out += fmt.Sprintf("%s\n", line)
 	out += fmt.Sprintf("%s\n", msg)
-	out += fmt.Sprintf("==================\n")
+	out += fmt.Sprintf("%s\n", line)
 	return out
 }

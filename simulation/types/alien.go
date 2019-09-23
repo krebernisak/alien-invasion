@@ -67,5 +67,5 @@ func (a *Alien) IsTrapped() bool {
 
 // String representation for an Alien
 func (a *Alien) String() string {
-	return fmt.Sprintf("name=%s city={%s}\n", a.Name, a.Node)
+	return fmt.Sprintf("name=%s city={%s}\n", a.Name, a.city)
 }

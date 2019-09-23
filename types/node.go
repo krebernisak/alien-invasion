@@ -30,9 +30,10 @@ func (n *Node) Connect(other *Node) *Link {
 
 // ConnectVia via link to Node
 func (n *Node) ConnectVia(link *Link, other *Node) *Link {
-	// TODO: merge links if link with same key exists
-	n.Links = append(n.Links, link)
-	n.Nodes[link.Key] = other
+	if n.Nodes[link.Key] == nil {
+		n.Links = append(n.Links, link)
+		n.Nodes[link.Key] = other
+	}
 	return link
 }
 

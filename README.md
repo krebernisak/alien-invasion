@@ -20,7 +20,7 @@ Usage of /main:
   -entropy int
         random number used as entropy seed
   -intel string
-        a file used to identify aliens
+        a file used to identify aliens (default "./test/aliens.txt")
   -iterations int
         number of iterations (default 10000)
   -simulation string
@@ -72,7 +72,6 @@ We use flags map for Agents and Nodes to avoid deleting and removing information
 
 ### Next steps
 
-- [ ] Alien names intel (just for fun)
 - [ ] More map examples
 - [ ] More unit tests
 - [ ] Deterministic I/O tests

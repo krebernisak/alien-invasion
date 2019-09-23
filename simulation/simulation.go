@@ -52,7 +52,7 @@ const (
 	// NoOpWorldDestroyed when World is destroyed
 	NoOpWorldDestroyed int = 3
 	// NoOpMessage when no-op
-	NoOpMessage = " || To: NO move! %s\n"
+	NoOpMessage = " || NO move! %s\n"
 )
 
 // Error string representation
@@ -108,7 +108,8 @@ func (s *Simulation) Start() error {
 // MoveAlien moves the Alien position in the simulation
 func (s *Simulation) MoveAlien(alien *Alien) error {
 	from, to, err := s.pickMove(alien)
-	fmt.Printf("Moving Alien: %s", alien)
+	fmt.Printf("Moving Alien: %s\n", alien.Name)
+	fmt.Printf(" => From: %s\n", from)
 	fmt.Printf(" => To: %s\n", to)
 	if err != nil {
 		// no-op error
