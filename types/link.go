@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-// Link type representing connection between Nodes
+// Link represents a connection between Nodes
 type Link struct {
 	Key   string
 	Nodes []string
 }
 
-// NewLink creates a Link with sorted key
+// NewLink creates a Link with a sorted key
 func NewLink(nodes ...string) Link {
 	sort.Strings(nodes)
 	key := strings.Join(nodes, "_")

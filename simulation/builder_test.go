@@ -14,6 +14,10 @@ func TestWorldReadFromFile_2(t *testing.T) {
 	testWorldReadFromFile(t, "../test/example_2.txt", 6)
 }
 
+func TestWorldReadFromFile_3(t *testing.T) {
+	testWorldReadFromFile(t, "../test/example_3.txt", 8)
+}
+
 func testWorldReadFromFile(t *testing.T, file string, num int) {
 	w, input, err := ReadWorldMapFile(file)
 	if err != nil {

@@ -11,7 +11,7 @@ const (
 	FlagDead string = "dead"
 )
 
-// Alien can be dead or alive and occupating a City
+// Alien can be dead or alive and occupying a City
 type Alien struct {
 	types.Agent
 	city *City
@@ -20,7 +20,9 @@ type Alien struct {
 // NewAlien creates an Alien with a name and default flags
 func NewAlien(name string) Alien {
 	// Flags FlagDead default is false
-	return Alien{types.NewAgent(name), nil}
+	return Alien{
+		Agent: types.NewAgent(name),
+	}
 }
 
 // InvadeCity change City this Alien is occupying
@@ -44,7 +46,7 @@ func (a *Alien) Kill() {
 	a.Flags[FlagDead] = true
 }
 
-// IsInvading checks if Alien is curently invading a City
+// IsInvading checks if Alien is currently invading a City
 func (a *Alien) IsInvading() bool {
 	return a.Node != nil
 }

@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	// DefaultIterations used if number of iteration is not othervise specified
+	// DefaultIterations used if number of iteration is not otherwise specified
 	DefaultIterations int = 10000
-	// DefaultNumberOfAliens used if number of Aliens is not othervise specified
+	// DefaultNumberOfAliens used if number of Aliens is not otherwise specified
 	DefaultNumberOfAliens int = 10
-	// DefaultWorldFile used if World file is not othervise specified
+	// DefaultWorldFile used if World file is not otherwise specified
 	DefaultWorldFile = "./test/example.txt"
 )
 

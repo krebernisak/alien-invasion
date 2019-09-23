@@ -11,18 +11,16 @@ import (
 	"alien-invasion/simulation/types"
 )
 
-// TODO: rename as WorldMapFile?
-
-// InputCityList is a list of cities as read from the input file lines
-type InputCityList []*City
+// WorldMapFile is a list of cities as read from the input file
+type WorldMapFile []*City
 
 const (
-	// RandAlienNameLen is a constant used to normalize number choosen as Alien name
+	// RandAlienNameLen is a constant used to normalize number chosen as Alien name
 	RandAlienNameLen = 10
 )
 
-// String representation of a InputCityList, used to display output in same format
-func (in InputCityList) String() string {
+// String representation of a WorldMapFile, used to display output in same format
+func (in WorldMapFile) String() string {
 	var out string
 	for _, city := range in {
 		if city.IsDestroyed() {
@@ -48,7 +46,7 @@ func (in InputCityList) String() string {
 	return out
 }
 
-// RandAliens creates N new Alien objects with random names
+// RandAliens creates N new Aliens with random names
 func RandAliens(n int, r *rand.Rand) []*Alien {
 	out := make([]*Alien, 0)
 	for n > 0 {
@@ -61,7 +59,7 @@ func RandAliens(n int, r *rand.Rand) []*Alien {
 }
 
 // ReadWorldMapFile takes in a file and constructs a World map
-func ReadWorldMapFile(file string) (World, InputCityList, error) {
+func ReadWorldMapFile(file string) (World, WorldMapFile, error) {
 	// Open and close file
 	f, err := os.Open(file)
 	if err != nil {
@@ -73,7 +71,7 @@ func ReadWorldMapFile(file string) (World, InputCityList, error) {
 	scanner.Split(bufio.ScanLines)
 	// Prepare data structures
 	w := make(World)
-	input := make(InputCityList, 0)
+	input := make(WorldMapFile, 0)
 	for scanner.Scan() {
 		sections := strings.Split(scanner.Text(), " ")
 		// Add new City to the world map
