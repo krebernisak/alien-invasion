@@ -39,18 +39,21 @@ type Simulation struct {
 	CityDefense
 }
 
+// NoOpReason why Alien did not make a move
+type NoOpReason uint8
+
 // NoOpError when next move can not be made
 type NoOpError struct {
-	reason int
+	reason NoOpReason
 }
 
 const (
 	// NoOpAlienDead when Alien is Dead
-	NoOpAlienDead int = 1
+	NoOpAlienDead NoOpReason = iota
 	// NoOpAlienTrapped when Alien is Trapped
-	NoOpAlienTrapped int = 2
+	NoOpAlienTrapped
 	// NoOpWorldDestroyed when World is destroyed
-	NoOpWorldDestroyed int = 3
+	NoOpWorldDestroyed
 	// NoOpMessage when no-op
 	NoOpMessage = " || NO move! %s\n"
 )

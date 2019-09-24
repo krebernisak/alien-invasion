@@ -30,7 +30,7 @@ type WorldMapFile []*City
 
 // FilterDestroyed Cities from WorldMapFile
 func (in WorldMapFile) FilterDestroyed(world types.World) WorldMapFile {
-	out := make(WorldMapFile, 0)
+	out := make(WorldMapFile, 0, len(in))
 	processed := make(map[string]bool)
 	for _, city := range in {
 		// If processed continue
@@ -75,13 +75,13 @@ func (in WorldMapFile) String() string {
 
 // RandAliens creates N new Aliens with random names
 func RandAliens(n int, r *rand.Rand) []*Alien {
-	out := make([]*Alien, 0)
-	for ; n > 0; n-- {
+	aliens := make([]*Alien, n)
+	for i := 0; i < n; i++ {
 		name := strconv.Itoa(r.Int())[:RandAlienNameLen]
 		alien := types.NewAlien(name)
-		out = append(out, &alien)
+		aliens[i] = &alien
 	}
-	return out
+	return aliens
 }
 
 // IdentifyAliens reads Alien intel file and names Aliens
